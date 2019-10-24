@@ -93,6 +93,8 @@ def handle_event(event):
             filterUsers = True
 
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel, filterUsers))
+    elif "help" in event_text:
+        return __spibot__.send_data_to_slack(channel, "HELLLLLPPPPP MEEEEE", "Help Message Sent")
     else:
         return requests.make_response("invalid event", 500)
 
