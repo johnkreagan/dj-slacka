@@ -86,10 +86,16 @@ def handle_event(event):
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
         membersInChannel = []
+        filterUsers = False
         if "channel" in event_text:
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
-        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
+            filterUsers = True
+            return __spibot__.send_data_to_slack(channel, get_tunes(membersInChannel, filterUsers), "Songs Fetched")
+    elif "help" in event_text:
+        return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
+    elif "delete" in event_text:
+        u = User.query.filter_by(slack_user_name=peer_dj).first()
     else:
         return requests.make_response("invalid event", 500)
 
@@ -98,12 +104,27 @@ def get_random_fake_song():
     with open('sampleResponses/{}.json'.format(fileKey), 'r') as file:
         return json.loads(file.read())
 
+def get_help_text():
+    helpText = "-create a user, use `@DJ SLACKA new dj <yourPreferredDisplayName>` example: `@DJ SLACKA new dj Camillionaire`\n"
+    helpText += "-list of songs currently playing, use `@DJ SLACKA shuffle`\n"
+    helpText += "-list of songs currently playing filtered by users in the channel, use `@DJ SLACKA shuffle channel`"
+    return helpText
 
-def get_tunes(membersInChannel):
+
+
+def get_tunes(membersInChannel, toFilterUsers):
     songs = []
-    filteredUsers = filterUsers(User.query.all(), membersInChannel)
-    app.logger.error("filteredUsers: %s ", filteredUsers)
-    for user in User.query.all():
+
+    allUsers = User.query.all()
+    if toFilterUsers:
+        filteredUsers = filterUsers(allUsers, membersInChannel)
+    else:
+        filteredUsers = allUsers
+
+    for theUser in filteredUsers:
+        app.logger.error("filteredUsers: %s ", theUser.name)
+
+    for user in filteredUsers:
         try:
             track = __spibot__.get_currently_playing(user.oauth)
             if track:
@@ -131,6 +152,14 @@ def add_to_playlist(track, user, track_info):
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
+    if membersToInclude == []:
+        return users
+
+    for user in UserMapping.query.all():
+        app.logger.error("queriedUserMapping: %s ", user.spotify_user_name)
+    for user in users:
+        app.logger.error("queriedUser: %s ", user.spotify_id)
+
     for member in membersToInclude:
         u_mapping = UserMapping.query.filter_by(slack_user_name=member).first()
         app.logger.error("userMapping: %s ", u_mapping)
