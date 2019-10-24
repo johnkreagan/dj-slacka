@@ -20,7 +20,7 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
   class Meta:
-    fields = ('spotify_id', 'id')
+    fields = ('spotify_id', 'id', 'name')
 
 class UserMapping(db.Model):
   __tablename__ = 'user_mapping'
