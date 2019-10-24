@@ -138,7 +138,7 @@ def filterUsers(users, membersToInclude):
         return users
 
     for user in UserMapping.query.all():
-        app.logger.error("queriedUserMapping: %s ", user.slack_user_name)
+        app.logger.error("queriedUserMapping: %s ", user.spotify_user_name)
     for user in users:
         app.logger.error("queriedUser: %s ", user.spotify_id)
 
