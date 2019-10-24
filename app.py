@@ -86,12 +86,11 @@ def handle_event(event):
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
         membersInChannel = []
+        filterUsers = False
         if "channel" in event_text:
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
             filterUsers = True
-            if membersInChannel == []:
-                filterUsers = False
 
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel, filterUsers))
     else:
@@ -103,11 +102,11 @@ def get_random_fake_song():
         return json.loads(file.read())
 
 
-def get_tunes(membersInChannel, filterUsers):
+def get_tunes(membersInChannel, toFilterUsers):
     songs = []
 
     allUsers = User.query.all()
-    if filterUsers:
+    if toFilterUsers:
         filteredUsers = filterUsers(allUsers, membersInChannel)
     else:
         filteredUsers = allUsers
