@@ -89,8 +89,11 @@ def handle_event(event):
         if "channel" in event_text:
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
+            filterUsers = True
+            if membersInChannel == []:
+                filterUsers = False
 
-        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
+        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel, filterUsers))
     else:
         return requests.make_response("invalid event", 500)
 
@@ -100,11 +103,16 @@ def get_random_fake_song():
         return json.loads(file.read())
 
 
-def get_tunes(membersInChannel):
+def get_tunes(membersInChannel, filterUsers):
     songs = []
-    filteredUsers = filterUsers(User.query.all(), membersInChannel)
-    app.logger.error("filteredUsers: %s ", filteredUsers)
-    for user in User.query.all():
+
+    allUsers = User.query.all()
+    if filterUsers:
+        filteredUsers = filterUsers(allUsers, membersInChannel)
+    else:
+        filteredUsers = allUsers
+    app.logger.info("filteredUsers: %s ", filteredUsers)
+    for user in filteredUsers:
         try:
             track = __spibot__.get_currently_playing(user.oauth)
             if track:
@@ -124,9 +132,12 @@ def get_tunes(membersInChannel):
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
+    if membersToInclude == []:
+        return users
+
     for member in membersToInclude:
         u_mapping = UserMapping.query.filter_by(slack_user_name=member).first()
-        app.logger.error("userMapping: %s ", u_mapping)
+        app.logger.info("userMapping: %s ", u_mapping)
         if (u_mapping is not None):
             for user in users:
                 if user.spotify_id == u_mapping.spotify_user_name:
