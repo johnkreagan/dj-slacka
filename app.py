@@ -94,7 +94,7 @@ def handle_event(event):
 
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel, filterUsers))
     elif "help" in event_text:
-        return __spibot__.send_data_to_slack(channel, "HELLLLLPPPPP MEEEEE", "Help Message Sent")
+        return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
     else:
         return requests.make_response("invalid event", 500)
 
@@ -102,6 +102,9 @@ def get_random_fake_song():
     fileKey = random.randint(0,3)
     with open('sampleResponses/{}.json'.format(fileKey), 'r') as file:
         return json.loads(file.read())
+
+def get_help_text():
+    return "eyyyyy /n new line"
 
 
 def get_tunes(membersInChannel, toFilterUsers):
