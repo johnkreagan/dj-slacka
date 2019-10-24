@@ -120,6 +120,14 @@ def get_tunes(membersInChannel):
         return "Its quiet...too quiet...get some music started g"
     return '\n'.join(songs)
 
+def filterUsers(users, membersToInclude):
+    filteredUsers = []
+    for user in users:
+        if user.id in membersToInclude:
+            filteredUsers.append(user)
+
+    return filteredUsers
+
 def get_tunes_detailed():
     songs = []
     for user in User.query.all():
