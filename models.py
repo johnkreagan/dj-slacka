@@ -24,7 +24,7 @@ class UserSchema(ma.Schema):
 
 class UserMapping(db.Model):
   __tablename__ = 'user_mapping'
-  slack_user_name = db.Column(db.String(256), unique=True)
+  slack_user_name = db.Column(db.String(256), unique=True , primary_key=True)
   spotify_user_name = db.Column(db.String(64), unique=True)
 
   def __init__(self, slack_user_name, spotify_user_name):
