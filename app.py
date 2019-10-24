@@ -91,7 +91,7 @@ def handle_event(event):
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
             filterUsers = True
-            return __spibot__.send_data_to_slack(channel, get_tunes(membersInChannel, filterUsers), "Songs Fetched")
+        return __spibot__.send_data_to_slack(channel, get_tunes(membersInChannel, filterUsers), "Songs Fetched")
     elif "help" in event_text:
         return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
     elif "delete" in event_text:
