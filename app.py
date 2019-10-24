@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Playlist
+from models import User, UserSchema, UserMapping, Playlist, UserTrackRating
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -70,6 +70,29 @@ def __create_user__(access_token, refresh_token):
             return(jsonify("success!"))
     return(jsonify("error adding new user"))
 
+@app.route("/rate/", methods=["GET"])
+def rate():
+    track_id = request.args.get('trackId', default = -1, type = int)
+    like = request.args.get('like', default = 0, type = int)
+    if (track_id == -1 or like == 0):
+        return  request.make_response("invalid parameters", 400)
+    
+    rate_track(track_id, (like > 0))
+    return request.make_response("Thank you for voting!", 200)
+
+def rate_track(track_id, like):
+    app.logger.error("Rating track %s %b", track_id, like)
+    if track_id:
+        track_rating = UserTrackRating.query.filter_by(track_id=track_id).first()
+        if (track_rating is None):
+                track_rating = UserTrackRating(track_id)
+                db.session.add(track_rating)
+        if track_rating:
+            track_rating.rating = track_rating.rating +  1 if like else -1
+            db.session.commit()
+            return(jsonify("success!"))
+    return(jsonify("error adding new user"))
+
 def handle_event(event):
     event_text = event["text"]
     peer_dj = event["user"]
@@ -91,7 +114,7 @@ def handle_event(event):
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
-        return requests.make_response("invalid event", 500)
+        return request.make_response("invalid event", 500)
 
 def get_random_fake_song():
     fileKey = random.randint(0,3)

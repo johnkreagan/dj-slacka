@@ -49,3 +49,15 @@ class Playlist(db.Model):
 
   def __repre__(self):
     return 'track details track_name : {}, artist: {}, user_id:{} >'.format(self.track_name, self.artist, self.user_id)
+
+class UserTrackRating(db.Model):
+  __tablename__ = 'user_track_rating'
+  id = db.Column(db.Integer, unique=True, primary_key=True)
+  track_id = db.Column(db.String(256), unique=True)
+  rating = db.Column(db.Integer, unique=False)
+  def __init__(self, track_id):
+    self.track_id = track_id
+    self.rating = 0
+
+  def __repre__(self):
+    return 'track_id: {}, rating : {}>'.format(self.track_id, self.rating)
