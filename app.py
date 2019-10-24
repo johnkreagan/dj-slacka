@@ -110,7 +110,10 @@ def get_tunes(membersInChannel, toFilterUsers):
         filteredUsers = filterUsers(allUsers, membersInChannel)
     else:
         filteredUsers = allUsers
-    app.logger.info("filteredUsers: %s ", filteredUsers)
+
+    for theUser in filteredUsers:
+        app.logger.info("filteredUsers: %s ", theUser.name)
+
     for user in filteredUsers:
         try:
             track = __spibot__.get_currently_playing(user.oauth)
