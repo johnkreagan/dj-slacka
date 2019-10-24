@@ -124,7 +124,7 @@ def get_tunes(membersInChannel):
     return '\n'.join(songs)
 
 def add_to_playlist(track, user, track_info):
-    playlist = Playlist(track['name'], track_info, track['album'],  user.id)
+    playlist = Playlist(track['name'], track_info, user.id)
     db.session.add(playlist)
     db.session.commit()
     app.logger.error("playlist: %s added to db", playlist)
