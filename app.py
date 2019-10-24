@@ -80,7 +80,7 @@ def handle_event(event):
         membersInChannel = []
         if "channel" in event_text:
             membersInChannel = __spibot__.get_members_in_channel(channel)
-            app.logger.error("members: %s", membersInChannel)
+            app.logger.error("members: %s channel: %s", membersInChannel, channel)
 
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
