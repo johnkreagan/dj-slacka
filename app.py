@@ -112,7 +112,7 @@ def get_tunes(membersInChannel):
                 for i in track['artists']:
                     track_info += "%s, " %(i['name'])
                 track_info = track_info[:-2]
-                add_to_playlist(track, user)
+                add_to_playlist(track, user, track_info)
                 track_info += ": %s" %(track['name'])
                 songs.append("%s -> %s" %(user.name, track_info))
 
