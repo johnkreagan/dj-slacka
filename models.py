@@ -20,4 +20,16 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
   class Meta:
-    fields = ('spotify_id', 'id', 'name')
+    fields = ('spotify_id', 'id')
+
+class UserMapping(db.Model):
+  __tablename__ = 'user_mapping'
+  slack_user_name = db.Column(db.String(256), unique=True , primary_key=True)
+  spotify_user_name = db.Column(db.String(64), unique=True)
+
+  def __init__(self, slack_user_name, spotify_user_name):
+    self.slack_user_name = slack_user_name
+    self.spotify_user_name = spotify_user_name
+
+  def __repre__(self):
+    return 'slack user name : {}, spotify user name : {}>'.format(self.slack_user_name, self.spotify_user_name)

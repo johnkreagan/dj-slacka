@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema
+from models import User, UserSchema, UserMapping
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -75,6 +75,14 @@ def handle_event(event):
     peer_dj = event["user"]
     channel = event["channel"]
     if "new dj" in event_text:
+        user_name = (event_text.split())[-1]
+        app.logger.error("user_name: %s peer_dj: %s", user_name, peer_dj)
+        u_mapping = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
+        if (u_mapping is None):
+            u_mapping = UserMapping(peer_dj, user_name)
+            db.session.add(u_mapping)
+            db.session.commit()
+            app.logger.error("u_mapping: %s added to db", u_mapping)
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
         membersInChannel = []
