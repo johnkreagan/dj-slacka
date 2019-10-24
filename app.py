@@ -126,9 +126,10 @@ def filterUsers(users, membersToInclude):
     filteredUsers = []
     for member in membersToInclude:
         u_mapping = UserMapping.query.filter_by(slack_user_name=member).first()
+        app.logger.error("userMapping: %s ", u_mapping)
 
         for user in users:
-            if user.spotify_id == u_mapping.spotify_user_name:
+            if user.spotify_id == u_mapping:
                 filteredUsers.append(user)
 
 
