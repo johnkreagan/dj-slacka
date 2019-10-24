@@ -77,7 +77,12 @@ def handle_event(event):
     if "new dj" in event_text:
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
-        return __spibot__.send_currently_playing_list(channel, get_tunes())
+        membersInChannel = []
+        if "channel" in event_text:
+            membersInChannel = __spibot__.get_members_in_channel(channel)
+            app.logger.error("members: %s", membersInChannel)
+
+    return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
         return requests.make_response("invalid event", 500)
 
