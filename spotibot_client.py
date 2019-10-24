@@ -71,7 +71,7 @@ class Spotibot:
             "channels.info",
             channel=channel,
         ))
-        return response
+        return response.channel.members
 
 
     def __init__(self, slack_api_token):
