@@ -40,7 +40,7 @@ class Playlist(db.Model):
   id = db.Column(db.Integer, unique=True, primary_key=True)
   track_name = db.Column(db.String(1024))
   artist = db.Column(db.String(1024))
-  user_id = db.Column(db.Integer, db.ForeignKey('User.id'),nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id'),nullable=False)
 
   def __init__(self, track_name, artist, user_id):
     self.track_name = track_name
