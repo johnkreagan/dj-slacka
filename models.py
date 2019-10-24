@@ -53,7 +53,7 @@ class Playlist(db.Model):
 class UserTrackRating(db.Model):
   __tablename__ = 'user_track_rating'
   id = db.Column(db.Integer, unique=True, primary_key=True)
-  track_id = db.Column(db.String(256), unique=True)
+  track_id = db.Column(db.Integer, db.ForeignKey('playlist.id'))
   rating = db.Column(db.Integer, unique=False)
   def __init__(self, track_id):
     self.track_id = track_id

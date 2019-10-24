@@ -151,6 +151,7 @@ def add_to_playlist(track, user, track_info):
     db.session.add(playlist)
     db.session.commit()
     app.logger.error("playlist: %s added to db", playlist)
+    return playlist.id
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
@@ -171,7 +172,9 @@ def get_tunes_detailed():
         try:
             track = __spibot__.get_currently_playing(user.oauth)
             if track:
-                songs.append({"user":user.name,"track":track})
+                track_id = add_to_playlist(track['name'], user, get_artists_string(track))
+                songs.append({"user":user.name,"track":track,"track_id":track_id})
+
         except SpotifyAuthTokenError:
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
@@ -179,6 +182,16 @@ def get_tunes_detailed():
         return { "error": "Its quiet...too quiet...get some music started g"}
     return songs
 
+def get_artists_string(track):
+    
+    if not track['artists']:
+        return ""
+
+    for i in track['artists']:
+        track_info += "%s, " %(i['name'])
+
+    return track_info
+    
 def _renew_access_token(user):
     t = __spibot__.get_new_access_token(refresh_token=user.refresh_tok)
     user_tok = t['access_token']
