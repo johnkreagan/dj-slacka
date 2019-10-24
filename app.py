@@ -102,6 +102,8 @@ def get_random_fake_song():
 
 def get_tunes(membersInChannel):
     songs = []
+    filteredUsers = filterUsers(User.query.all(), membersInChannel)
+    app.logger.error("filteredUsers: %s ", filteredUsers)
     for user in User.query.all():
         try:
             track = __spibot__.get_currently_playing(user.oauth)
@@ -122,9 +124,13 @@ def get_tunes(membersInChannel):
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
-    for user in users:
-        if user.id in membersToInclude:
-            filteredUsers.append(user)
+    for member in membersToInclude:
+        u_mapping = UserMapping.query.filter_by(slack_user_name=member).first()
+
+        for user in users:
+            if user.spotify_id == u_mapping.spotify_user_name:
+                filteredUsers.append(user)
+
 
     return filteredUsers
 
