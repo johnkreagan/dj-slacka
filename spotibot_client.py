@@ -67,10 +67,10 @@ class Spotibot:
         return make_response("Songs fetched", 200)
 
     def get_members_in_channel(self, channel):
-        response = json.dumps(self.__sc__.api_call(
+        response = json.loads(json.dumps(self.__sc__.api_call(
             "channels.info",
             channel=channel,
-        ))
+        )))
         return response.channel.members
 
 
