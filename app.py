@@ -112,7 +112,7 @@ def get_tunes(membersInChannel, toFilterUsers):
         filteredUsers = allUsers
 
     for theUser in filteredUsers:
-        app.logger.info("filteredUsers: %s ", theUser.name)
+        app.logger.error("filteredUsers: %s ", theUser.name)
 
     for user in filteredUsers:
         try:
@@ -139,7 +139,7 @@ def filterUsers(users, membersToInclude):
 
     for member in membersToInclude:
         u_mapping = UserMapping.query.filter_by(slack_user_name=member).first()
-        app.logger.info("userMapping: %s ", u_mapping)
+        app.logger.error("userMapping: %s ", u_mapping)
         if (u_mapping is not None):
             for user in users:
                 if user.spotify_id == u_mapping.spotify_user_name:
