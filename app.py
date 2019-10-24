@@ -92,7 +92,7 @@ def get_random_fake_song():
         return json.loads(file.read())
 
 
-def get_tunes():
+def get_tunes(membersInChannel):
     songs = []
     for user in User.query.all():
         try:
