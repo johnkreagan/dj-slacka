@@ -33,3 +33,19 @@ class UserMapping(db.Model):
 
   def __repre__(self):
     return 'slack user name : {}, spotify user name : {}>'.format(self.slack_user_name, self.spotify_user_name)
+
+class Playlist(db.Model):
+  __tablename__ = 'playlist'
+
+  id = db.Column(db.Integer, unique=True, primary_key=True)
+  track_name = db.Column(db.String(1024))
+  artist = db.Column(db.String(1024))
+  user_id = db.Column(db.Integer, db.ForeignKey('User.id'),nullable=False)
+
+  def __init__(self, track_name, artist, user_id):
+    self.track_name = track_name
+    self.artist = artist
+    self.user_id = user_id
+
+  def __repre__(self):
+    return 'track details track_name : {}, artist: {}, user_id:{} >'.format(self.track_name, self.artist, self.user_id)

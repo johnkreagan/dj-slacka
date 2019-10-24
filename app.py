@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping
+from models import User, UserSchema, UserMapping, Playlist
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -89,7 +89,6 @@ def handle_event(event):
         if "channel" in event_text:
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
-
         return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
         return requests.make_response("invalid event", 500)
@@ -111,14 +110,22 @@ def get_tunes(membersInChannel):
                 for i in track['artists']:
                     track_info += "%s, " %(i['name'])
                 track_info = track_info[:-2]
+                add_to_playlist(track, user)
                 track_info += ": %s" %(track['name'])
                 songs.append("%s -> %s" %(user.name, track_info))
+
         except SpotifyAuthTokenError:
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
     if not songs:
         return "Its quiet...too quiet...get some music started g"
     return '\n'.join(songs)
+
+def add_to_playlist(track, user, track_info):
+    playlist = Playlist(track['name'], track_info, track['album'],  user.id)
+    db.session.add(playlist)
+    db.session.commit()
+    app.logger.error("playlist: %s added to db", playlist)
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
