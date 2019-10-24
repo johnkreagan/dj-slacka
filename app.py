@@ -85,7 +85,12 @@ def handle_event(event):
             app.logger.error("u_mapping: %s added to db", u_mapping)
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
-        return __spibot__.send_currently_playing_list(channel, get_tunes())
+        membersInChannel = []
+        if "channel" in event_text:
+            membersInChannel = __spibot__.get_members_in_channel(channel)
+            app.logger.error("members: %s channel: %s", membersInChannel, channel)
+
+        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
         return requests.make_response("invalid event", 500)
 
@@ -95,7 +100,7 @@ def get_random_fake_song():
         return json.loads(file.read())
 
 
-def get_tunes():
+def get_tunes(membersInChannel):
     songs = []
     for user in User.query.all():
         try:
@@ -121,7 +126,7 @@ def get_tunes_detailed():
         try:
             track = __spibot__.get_currently_playing(user.oauth)
             if track:
-                songs.append({"user":user.spotify_id,"track":track})
+                songs.append({"user":user.name,"track":track})
         except SpotifyAuthTokenError:
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
