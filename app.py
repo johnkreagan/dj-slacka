@@ -92,13 +92,11 @@ def handle_event(event):
             app.logger.error("members: %s channel: %s", membersInChannel, channel)
             filterUsers = True
 
-        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel, filterUsers))
+        return __spibot__.send_data_to_slack(channel, get_tunes(membersInChannel, filterUsers), "Songs Fetched")
     elif "help" in event_text:
         return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
     elif "delete" in event_text:
-        u = User.query.filter_by(slack_user_name=username).first()
-        db.session.add(u_mapping)
-        db.session.commit()
+        u = User.query.filter_by(slack_user_name=peer_dj).first()
     else:
         return requests.make_response("invalid event", 500)
 
