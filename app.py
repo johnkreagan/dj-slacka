@@ -104,9 +104,9 @@ def get_random_fake_song():
         return json.loads(file.read())
 
 def get_help_text():
-    helpText = "create a user, use @DJ SLACKA new dj <yourPreferredDisplayName> example: @DJ SLACKA new dj Camillionaire\n"
-    helpText += "list of songs currently playing, use @DJ SLACKA shuffle\n"
-    helpText += "list of songs currently playing filtered by users in the channel, use @DJ SLACKA shuffle channel"
+    helpText = "-create a user, use `@DJ SLACKA new dj <yourPreferredDisplayName>` example: `@DJ SLACKA new dj Camillionaire`\n"
+    helpText += "-list of songs currently playing, use `@DJ SLACKA shuffle`\n"
+    helpText += "-list of songs currently playing filtered by users in the channel, use `@DJ SLACKA shuffle channel`"
     return helpText
 
 
