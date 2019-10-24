@@ -82,7 +82,7 @@ def handle_event(event):
             membersInChannel = __spibot__.get_members_in_channel(channel)
             app.logger.error("members: %s", membersInChannel)
 
-    return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
+        return __spibot__.send_currently_playing_list(channel, get_tunes(membersInChannel))
     else:
         return requests.make_response("invalid event", 500)
 
