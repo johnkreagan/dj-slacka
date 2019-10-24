@@ -67,11 +67,11 @@ class Spotibot:
         return make_response("Songs fetched", 200)
 
     def get_members_in_channel(self, channel):
-        response = self.__sc__.api_call(
+        response = json.loads(self.__sc__.api_call(
             "channels.info",
             channel=channel,
-        )
-        return response
+        ))
+        return response["channel"]["members"]
 
 
     def __init__(self, slack_api_token):
