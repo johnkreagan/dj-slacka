@@ -101,7 +101,7 @@ def unlike():
     return request.make_response("Thank you for disliking!", 200)
 
 def rate_track(track_id):
-    app.logger.error("Rating track %s %b", track_id)
+    app.logger.error("Rating track %s", track_id)
     if track_id:
         likedTrack = LikedTracks(track_id)
         db.session.add(likedTrack)
