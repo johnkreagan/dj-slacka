@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Playlist, UserTrackRating
+from models import User, UserSchema, UserMapping, Track, PlayedTracks
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -76,8 +76,9 @@ def __create_user__(access_token, refresh_token):
 
 @app.route("/rate/", methods=["GET"])
 def rate():
-    track_id = request.args.get('trackId', default = -1, type = int)
+    track_id = request.args.get('track_id', default = -1, type = int)
     like = request.args.get('like', default = 0, type = int)
+    app.logger.error("track_id: %s like: %s", track_id, like)
     if (track_id == -1 or like == 0):
         return  request.make_response("invalid parameters", 400)
     
@@ -87,6 +88,12 @@ def rate():
 def rate_track(track_id, like):
     app.logger.error("Rating track %s %b", track_id, like)
     if track_id:
+            matchingTrack = Track.query.filter_by(track_id=track['track_id']).first()
+
+            if matchingTrack is None:
+                matchingTrack = Track(track['name'], get_artists_string(track), track['spotify_id'], 0 , "")
+                db.session.add(matchingTrack)
+            db.session.commit()
         track_rating = UserTrackRating.query.filter_by(track_id=track_id).first()
         if (track_rating is None):
                 track_rating = UserTrackRating(track_id)
@@ -151,11 +158,18 @@ def get_tunes(membersInChannel):
     return '\n'.join(songs)
 
 def add_to_playlist(track, user, track_info):
-    playlist = Playlist(track['name'], track_info, user.id)
-    db.session.add(playlist)
+    
+    matchingTrack = Track.query.filter_by(spotify_id=track['spotify_id']).first()
+
+    if matchingTrack is None:
+        matchingTrack = Track(track['name'], get_artists_string(track), track['spotify_id'], 0 , "")
+        db.session.add(matchingTrack)
     db.session.commit()
-    app.logger.error("playlist: %s added to db", playlist)
-    return playlist.id
+
+    playedTrack = PlayedTracks(matchingTrack.id, user.id)
+    db.session.add(playedTrack)
+    db.session.commit()
+    return matchingTrack.id
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
