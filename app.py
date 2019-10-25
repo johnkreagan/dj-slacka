@@ -44,6 +44,13 @@ def authorizeDjRobot():
         event = slack_request["event"]
         return(handle_event(event))
 
+@app.route("/comment", methods=["POST"])
+def update_track_comment():
+    comment = request.POST['comment']
+    track_id = request.POST['track_idf']
+    comment_track(track_id, comment)
+    return jsonify("Success")
+
 @app.route("/", methods=["GET"])
 def get_response_from_spotty():
     code = request.values['code']
@@ -91,6 +98,17 @@ def rate_track(track_id, like):
         track_object = Track.query.filter_by(track_id=track_id).first()
         if track_object:
             track_object.rating = track_object.rating +  1 if like else -1
+            db.session.commit()
+            return(jsonify("success!"))
+
+    return(jsonify("error adding new user"))
+
+def comment_track(track_id, comment):
+    app.logger.error("commenting on track %s %b", track_id, comment)
+    if track_id:
+        track_object = Track.query.filter_by(track_id=track_id).first()
+        if track_object:
+            track_object.comment = comment
             db.session.commit()
             return(jsonify("success!"))
 
