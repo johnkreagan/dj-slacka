@@ -100,11 +100,11 @@ def handle_event(event):
             filterUsers = True
         return __spibot__.send_data_to_slack(channel, get_tunes(membersInChannel, filterUsers), "Songs Fetched")
     elif "enable" in event_text:
-        user = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
+        user = User.query.filter_by(slack_user_name=peer_dj).first()
         user.enabled = True
         db.session.commit()
     elif "disable" in event_text:
-        user = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
+        user = User.query.filter_by(slack_user_name=peer_dj).first()
         user.enabled = False
         db.session.commit()
     elif "help" in event_text:
