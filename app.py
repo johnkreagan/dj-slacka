@@ -187,7 +187,7 @@ def get_artists_string(track):
     
     if not track['artists']:
         return ""
-
+    track_info = ""
     for i in track['artists']:
         track_info += "%s, " %(i['name'])
 
