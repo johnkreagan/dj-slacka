@@ -62,7 +62,8 @@ def __create_user__(access_token, refresh_token):
             name = r['display_name']
             u = User.query.filter_by(spotify_id=username).first()
             if (u is None):
-                u = User(username, name, access_token, refresh_token)
+                user_mapping = UserMapping.query.filter_by(spotify_user_name=name).first()
+                u = User(username, name, access_token, refresh_token, user_mapping.slack_user_name)
             else:
                 u.access_token = access_token
             db.session.add(u)
@@ -75,14 +76,20 @@ def handle_event(event):
     peer_dj = event["user"]
     channel = event["channel"]
     if "new dj" in event_text:
-        user_name = (event_text.split())[-1]
+        user_name = (' '.join((event_text.split())[3:])).strip()
+        if not user_name:
+            return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
         app.logger.error("user_name: %s peer_dj: %s", user_name, peer_dj)
         u_mapping = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
-        if (u_mapping is None):
+        if u_mapping is None:
             u_mapping = UserMapping(peer_dj, user_name)
             db.session.add(u_mapping)
             db.session.commit()
             app.logger.error("u_mapping: %s added to db", u_mapping)
+        elif u_mapping.spotify_user_name != user_name:
+            u_mapping.spotify_user_name = user_name
+            db.session.commit()
+            app.logger.error("updated the spotify user name to : %s ", u_mapping.spotify_user_name)
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
         membersInChannel = []
