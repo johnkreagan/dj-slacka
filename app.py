@@ -75,9 +75,8 @@ def handle_event(event):
     event_text = event["text"]
     peer_dj = event["user"]
     channel = event["channel"]
-    app.logger.error("Event test = ", event_text.split())
     if "new dj" in event_text:
-        user_name = (' '.join((event_text.split())[2:])).strip()
+        user_name = (' '.join((event_text.split())[3:])).strip()
         if not user_name:
             return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
         app.logger.error("user_name: %s peer_dj: %s", user_name, peer_dj)
