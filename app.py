@@ -163,7 +163,7 @@ def filterUsers(users, membersToInclude):
         return users
 
     for user in users:
-        if user.Slack_user_name in membersToInclude:
+        if user.slack_user_name in membersToInclude:
             filteredUsers.append(user)
 
     return filteredUsers
