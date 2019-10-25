@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Track, PlayedTracks
+from models import User, UserSchema, UserMapping, Track, PlayedTracks, LikedTracks
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -84,24 +84,39 @@ def __create_user__(access_token, refresh_token):
 @app.route("/rate/", methods=["GET"])
 def rate():
     track_id = request.args.get('track_id', default = -1, type = int)
-    like = request.args.get('like', default = 0, type = int)
-    app.logger.error("track_id: %s like: %s", track_id, like)
-    if (track_id == -1 or like == 0):
-        return  request.make_response("invalid parameters", 400)
+    app.logger.error("track_id: %s like: %s", track_id)
     
-    rate_track(track_id, (like > 0))
+    rate_track(track_id)
     return request.make_response("Thank you for voting!", 200)
 
-def rate_track(track_id, like):
-    app.logger.error("Rating track %s %b", track_id, like)
-    if track_id:
-        track_object = Track.query.filter_by(track_id=track_id).first()
-        if track_object:
-            track_object.rating = track_object.rating +  1 if like else -1
-            db.session.commit()
-            return(jsonify("success!"))
+@app.route("/unlike/", methods=["GET"])
+def unlike():
+    track_id = request.args.get('track_id', default = -1, type = int)
+    app.logger.error("track_id: %s like: %s", track_id)
+    
+    unlike_track(track_id)
+    return request.make_response("Thank you for disliking!", 200)
 
-    return(jsonify("error adding new user"))
+def rate_track(track_id):
+    app.logger.error("Rating track %s %b", track_id)
+    if track_id:
+        likedTrack = LikedTracks(track_id)
+        db.session.add(likedTrack)
+        db.session.commit()
+        return(jsonify("success!"))
+
+    return(jsonify("error liking track"))
+
+def unlike_track(track_id):
+    app.logger.error("Unlike track %s %b", track_id)
+    if track_id:
+        toDelete = LikedTracks.query.filter_by(track_id=track_id).order_by('timestamp').limit(1)
+        if toDelete is not None:
+            db.session.delete(toDelete)
+            db.session.commit()
+        return(jsonify("success!"))
+
+    return(jsonify("error deleting liked track"))
 
 def comment_track(track_id, comment):
     app.logger.error("commenting on track %s %b", track_id, comment)
