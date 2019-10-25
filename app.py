@@ -74,6 +74,8 @@ def __create_user__(access_token, refresh_token):
             u = User.query.filter_by(spotify_id=username).first()
             if (u is None):
                 user_mapping = UserMapping.query.filter_by(spotify_user_name=name).first()
+                if user_mapping is None:
+                    return(jsonify("Incorrect spotify username passed in"))
                 u = User(username, name, access_token, refresh_token, user_mapping.slack_user_name)
             else:
                 u.access_token = access_token
@@ -89,7 +91,7 @@ def rate():
     app.logger.error("track_id: %s like: %s", track_id, like)
     if (track_id == -1 or like == 0):
         return  request.make_response("invalid parameters", 400)
-    
+
     rate_track(track_id, (like > 0))
     return request.make_response("Thank you for voting!", 200)
 
@@ -226,7 +228,7 @@ def get_tunes(membersInChannel, toFilterUsers):
     return '\n'.join(songs)
 
 def add_to_playlist(track, user, track_info):
-    
+
     matchingTrack = Track.query.filter_by(spotify_id=track['id']).first()
 
     if matchingTrack is None:
@@ -270,7 +272,7 @@ def get_tunes_detailed():
     return songs
 
 def get_artists_string(track):
-    
+
     if not track['artists']:
         return ""
     track_info = ""
@@ -278,7 +280,7 @@ def get_artists_string(track):
         track_info += "%s, " %(i['name'])
 
     return track_info
-    
+
 def _renew_access_token(user):
     t = __spibot__.get_new_access_token(refresh_token=user.refresh_tok)
     user_tok = t['access_token']
