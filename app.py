@@ -29,7 +29,11 @@ def get_user():
 
 @app.route("/nowplaying", methods=["GET"])
 def get_nowplaying():
-    return jsonify(get_tunes_detailed())
+    tunes = get_tunes_detailed()
+    app.logger.error("TUNES: %s", tunes)
+    jsoned = jsonify(tunes)
+    app.logger.error("JSON: %s", jsoned)
+    return jsoned
 
 @app.route("/authdjrobot", methods=["POST"])
 def authorizeDjRobot():
