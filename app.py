@@ -137,7 +137,7 @@ def get_help_text():
 def get_tunes(membersInChannel, toFilterUsers):
     songs = []
 
-    allUsers = User.query.all()
+    allUsers = User.query.filter_by(enabled=True)
     if toFilterUsers:
         filteredUsers = filterUsers(allUsers, membersInChannel)
     else:
@@ -147,22 +147,21 @@ def get_tunes(membersInChannel, toFilterUsers):
         app.logger.error("filteredUsers: %s ", theUser.name)
 
     for user in filteredUsers:
-        if user.enabled == 'true':
-            try:
-                track = __spibot__.get_currently_playing(user.oauth)
-                if track:
-                    track = track['item']
-                    track_info = ''
-                    for i in track['artists']:
-                        track_info += "%s, " %(i['name'])
-                    track_info = track_info[:-2]
-                    add_to_playlist(track, user, track_info)
-                    track_info += ": %s" %(track['name'])
-                    songs.append("%s -> %s" %(user.name, track_info))
+        try:
+            track = __spibot__.get_currently_playing(user.oauth)
+            if track:
+                track = track['item']
+                track_info = ''
+                for i in track['artists']:
+                    track_info += "%s, " %(i['name'])
+                track_info = track_info[:-2]
+                add_to_playlist(track, user, track_info)
+                track_info += ": %s" %(track['name'])
+                songs.append("%s -> %s" %(user.name, track_info))
 
-            except SpotifyAuthTokenError:
-                _renew_access_token(user)
-                __spibot__.get_currently_playing(user.oauth)
+        except SpotifyAuthTokenError:
+            _renew_access_token(user)
+            __spibot__.get_currently_playing(user.oauth)
     if not songs:
         return "Its quiet...too quiet...get some music started g"
     return '\n'.join(songs)
