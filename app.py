@@ -173,7 +173,7 @@ def get_tunes_detailed():
             track = __spibot__.get_currently_playing(user.oauth)
             if track:
                 track = track['item']
-                track_id = add_to_playlist(track['name'], user, get_artists_string(track))
+                track_id = add_to_playlist(track, user, get_artists_string(track))
                 songs.append({"user":user.name,"track":track,"track_id":track_id})
 
         except SpotifyAuthTokenError:
