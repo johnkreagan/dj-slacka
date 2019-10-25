@@ -88,20 +88,9 @@ def rate():
 def rate_track(track_id, like):
     app.logger.error("Rating track %s %b", track_id, like)
     if track_id:
-            matchingTrack = Track.query.filter_by(track_id=track['track_id']).first()
+        matchingTrack = Track.query.filter_by(track_id=track_id).first()
 
-            if matchingTrack is None:
-                matchingTrack = Track(track['name'], get_artists_string(track), track['spotify_id'], 0 , "")
-                db.session.add(matchingTrack)
-            db.session.commit()
-        track_rating = UserTrackRating.query.filter_by(track_id=track_id).first()
-        if (track_rating is None):
-                track_rating = UserTrackRating(track_id)
-                db.session.add(track_rating)
-        if track_rating:
-            track_rating.rating = track_rating.rating +  1 if like else -1
-            db.session.commit()
-            return(jsonify("success!"))
+
     return(jsonify("error adding new user"))
 
 def handle_event(event):
