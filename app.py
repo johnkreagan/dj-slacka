@@ -183,6 +183,7 @@ def get_tunes_detailed():
             __spibot__.get_currently_playing(user.oauth)
     if not songs:
         return { "error": "Its quiet...too quiet...get some music started g"}
+    app.logger.error("Returning songs %s", songs)
     return songs
 
 def get_artists_string(track):
