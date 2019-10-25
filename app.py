@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Playlist
+from models import User, UserSchema, UserMapping, Track, PlayedTracks
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -29,7 +29,11 @@ def get_user():
 
 @app.route("/nowplaying", methods=["GET"])
 def get_nowplaying():
-    return jsonify(get_tunes_detailed())
+    tunes = get_tunes_detailed()
+    app.logger.error("TUNES: %s", tunes)
+    jsoned = jsonify(tunes)
+    app.logger.error("JSON: %s", jsoned)
+    return jsoned
 
 @app.route("/authdjrobot", methods=["POST"])
 def authorizeDjRobot():
@@ -39,6 +43,13 @@ def authorizeDjRobot():
     elif "event" in slack_request:
         event = slack_request["event"]
         return(handle_event(event))
+
+@app.route("/comment", methods=["POST"])
+def update_track_comment():
+    comment = request.POST['comment']
+    track_id = request.POST['track_idf']
+    comment_track(track_id, comment)
+    return jsonify("Success")
 
 @app.route("/", methods=["GET"])
 def get_response_from_spotty():
@@ -69,6 +80,39 @@ def __create_user__(access_token, refresh_token):
             db.session.add(u)
             db.session.commit()
             return(jsonify("success!"))
+    return(jsonify("error adding new user"))
+
+@app.route("/rate/", methods=["GET"])
+def rate():
+    track_id = request.args.get('track_id', default = -1, type = int)
+    like = request.args.get('like', default = 0, type = int)
+    app.logger.error("track_id: %s like: %s", track_id, like)
+    if (track_id == -1 or like == 0):
+        return  request.make_response("invalid parameters", 400)
+    
+    rate_track(track_id, (like > 0))
+    return request.make_response("Thank you for voting!", 200)
+
+def rate_track(track_id, like):
+    app.logger.error("Rating track %s %b", track_id, like)
+    if track_id:
+        track_object = Track.query.filter_by(track_id=track_id).first()
+        if track_object:
+            track_object.rating = track_object.rating +  1 if like else -1
+            db.session.commit()
+            return(jsonify("success!"))
+
+    return(jsonify("error adding new user"))
+
+def comment_track(track_id, comment):
+    app.logger.error("commenting on track %s %b", track_id, comment)
+    if track_id:
+        track_object = Track.query.filter_by(track_id=track_id).first()
+        if track_object:
+            track_object.comment = comment
+            db.session.commit()
+            return(jsonify("success!"))
+
     return(jsonify("error adding new user"))
 
 def handle_event(event):
@@ -119,7 +163,7 @@ def handle_event(event):
 
 
     else:
-        return requests.make_response("invalid event", 500)
+        return request.make_response("invalid event", 500)
 
 def get_random_fake_song():
     fileKey = random.randint(0,3)
@@ -167,10 +211,18 @@ def get_tunes(membersInChannel, toFilterUsers):
     return '\n'.join(songs)
 
 def add_to_playlist(track, user, track_info):
-    playlist = Playlist(track['name'], track_info, user.id)
-    db.session.add(playlist)
+    
+    matchingTrack = Track.query.filter_by(spotify_id=track['id']).first()
+
+    if matchingTrack is None:
+        matchingTrack = Track(track['name'], get_artists_string(track), track['id'], 0 , "")
+        db.session.add(matchingTrack)
     db.session.commit()
-    app.logger.error("playlist: %s added to db", playlist)
+
+    playedTrack = PlayedTracks(matchingTrack.id, user.id)
+    db.session.add(playedTrack)
+    db.session.commit()
+    return matchingTrack.id
 
 def filterUsers(users, membersToInclude):
     filteredUsers = []
@@ -188,15 +240,32 @@ def get_tunes_detailed():
     for user in User.query.all():
         try:
             track = __spibot__.get_currently_playing(user.oauth)
+            app.logger.error("spibot track retrieved: %s added to db", track)
             if track:
-                songs.append({"user":user.name,"track":track})
+                track = track['item']
+                track_id = add_to_playlist(track, user, get_artists_string(track))
+                app.logger.error("playlist track retrieved: %s added to db", track_id)
+                songs.append({"user":user.name,"track":track,"track_id":track_id})
+                app.logger.error("Added to songs")
         except SpotifyAuthTokenError:
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
     if not songs:
+        app.logger.error("Songs is NOT")
         return { "error": "Its quiet...too quiet...get some music started g"}
+    app.logger.error("Returning songs %s", songs)
     return songs
 
+def get_artists_string(track):
+    
+    if not track['artists']:
+        return ""
+    track_info = ""
+    for i in track['artists']:
+        track_info += "%s, " %(i['name'])
+
+    return track_info
+    
 def _renew_access_token(user):
     t = __spibot__.get_new_access_token(refresh_token=user.refresh_tok)
     user_tok = t['access_token']
