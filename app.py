@@ -166,18 +166,6 @@ def handle_event(event):
 
     elif "help" in event_text:
         return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
-    elif "delete" in event_text:
-        u = User.query.filter_by(slack_user_name=peer_dj).first()
-        if u:
-            tracks = Playlist.query.filter_by(user_id=u.id)
-            for track in tracks:
-                db.session.delete(track)
-            db.session.delete(u)
-            db.session.commit()
-            return __spibot__.send_data_to_slack(peer_dj, "User deleted.")
-        else:
-            return __spibot__.send_data_to_slack(peer_dj, "User not found.")
-
 
     else:
         return request.make_response("invalid event", 500)
@@ -190,7 +178,6 @@ def get_random_fake_song():
 def get_help_text():
     helpText = "-create a user, use `@DJ SLACKA new dj <spotify name>` example: `@DJ SLACKA new dj Camillionaire`\n"
     helpText += "-list of songs currently playing, use `@DJ SLACKA shuffle`\n"
-    helpText += "-`@DJ SLACKA delete` -  removes yourself from our app\n"
     helpText += "-`@DJ SLACKA update dj <spotify name>` - if you made a typo when trying to sign up originally\n"
     helpText += "-`@DJ SLACKA enable` - to let people know what you're listening to\n"
     helpText += "-`@DJ SLACKA disable` - listening to a NSFW playlist? jump off the public viewing list\n"
