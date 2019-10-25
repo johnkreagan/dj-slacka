@@ -169,10 +169,10 @@ def get_tunes(membersInChannel):
 
 def add_to_playlist(track, user, track_info):
     
-    matchingTrack = Track.query.filter_by(spotify_id=track['spotify_id']).first()
+    matchingTrack = Track.query.filter_by(spotify_id=track['id']).first()
 
     if matchingTrack is None:
-        matchingTrack = Track(track['name'], get_artists_string(track), track['spotify_id'], 0 , "")
+        matchingTrack = Track(track['name'], get_artists_string(track), track['id'], 0 , "")
         db.session.add(matchingTrack)
     db.session.commit()
 
