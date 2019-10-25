@@ -99,6 +99,10 @@ def unlike():
     
     return unlike_track(track_id)
 
+@app.route("/mostLikedSongs/", methods=["GET"])
+def most_liked_songs():
+    allLikedSongs = LikedTracks.query.group_by('track_id')
+    return jsonify(allLikedSongs)
 
 def rate_track(track_id):
     app.logger.error("Rating track %s", track_id)
@@ -120,6 +124,12 @@ def unlike_track(track_id):
         return(jsonify("success!"))
 
     return(jsonify("error deleting liked track"))
+
+def get_likes_for_song(track_id):
+    LikedTracks.query.filter_by(track_id=track_id).first()
+
+
+
 
 def comment_track(track_id, comment):
     app.logger.error("commenting on track %s %b", track_id, comment)
