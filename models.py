@@ -9,6 +9,7 @@ class User(db.Model):
   oauth = db.Column(db.String(256), unique=True)
   refresh_tok = db.Column(db.String(256), unique=True)
   slack_user_name = db.Column(db.String(256), unique=False)
+  enabled = db.Column(db.Boolean, unique=False)
 
   def __init__(self, user_id, display_name, oauth_token, refresh_token, slack_user_name):
     self.spotify_id = user_id
@@ -16,6 +17,7 @@ class User(db.Model):
     self.refresh_tok = refresh_token
     self.name = display_name
     self.slack_user_name = slack_user_name
+    self.enabled = True
 
   def __repre__(self):
     return 'spotify id: {}, slack_user_name : {} >'.format(self.spotify_id, self.slack_user_name)
