@@ -103,10 +103,14 @@ def handle_event(event):
         user = User.query.filter_by(slack_user_name=peer_dj).first()
         user.enabled = True
         db.session.commit()
+        return __spibot__.send_data_to_slack(peer_dj, ("User %s", user.enabled), ("User %s", user.enabled))
+
     elif "disable" in event_text:
         user = User.query.filter_by(slack_user_name=peer_dj).first()
         user.enabled = False
         db.session.commit()
+        return __spibot__.send_data_to_slack(peer_dj, ("User %s", user.enabled), ("User %s", user.enabled))
+
     elif "help" in event_text:
         return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
     elif "delete" in event_text:
@@ -143,21 +147,22 @@ def get_tunes(membersInChannel, toFilterUsers):
         app.logger.error("filteredUsers: %s ", theUser.name)
 
     for user in filteredUsers:
-        try:
-            track = __spibot__.get_currently_playing(user.oauth)
-            if track:
-                track = track['item']
-                track_info = ''
-                for i in track['artists']:
-                    track_info += "%s, " %(i['name'])
-                track_info = track_info[:-2]
-                add_to_playlist(track, user, track_info)
-                track_info += ": %s" %(track['name'])
-                songs.append("%s -> %s" %(user.name, track_info))
+        if user.enabled:
+            try:
+                track = __spibot__.get_currently_playing(user.oauth)
+                if track:
+                    track = track['item']
+                    track_info = ''
+                    for i in track['artists']:
+                        track_info += "%s, " %(i['name'])
+                    track_info = track_info[:-2]
+                    add_to_playlist(track, user, track_info)
+                    track_info += ": %s" %(track['name'])
+                    songs.append("%s -> %s" %(user.name, track_info))
 
-        except SpotifyAuthTokenError:
-            _renew_access_token(user)
-            __spibot__.get_currently_playing(user.oauth)
+            except SpotifyAuthTokenError:
+                _renew_access_token(user)
+                __spibot__.get_currently_playing(user.oauth)
     if not songs:
         return "Its quiet...too quiet...get some music started g"
     return '\n'.join(songs)
@@ -173,7 +178,7 @@ def filterUsers(users, membersToInclude):
     if membersToInclude == []:
         return users
     for user in users:
-        if user.slack_user_name in membersToInclude and user.enabled:
+        if user.slack_user_name in membersToInclude:
             filteredUsers.append(user)
     return filteredUsers
 
