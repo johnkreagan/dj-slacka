@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Track, PlayedTracks
+from models import User, UserSchema, UserMapping, Track, PlayedTracks, Playlist
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -74,6 +74,8 @@ def __create_user__(access_token, refresh_token):
             u = User.query.filter_by(spotify_id=username).first()
             if (u is None):
                 user_mapping = UserMapping.query.filter_by(spotify_user_name=name).first()
+                if user_mapping is None:
+                    return(jsonify("Incorrect spotify username passed in"))
                 u = User(username, name, access_token, refresh_token, user_mapping.slack_user_name)
             else:
                 u.access_token = access_token
@@ -89,7 +91,7 @@ def rate():
     app.logger.error("track_id: %s like: %s", track_id, like)
     if (track_id == -1 or like == 0):
         return  request.make_response("invalid parameters", 400)
-    
+
     rate_track(track_id, (like > 0))
     return request.make_response("Thank you for voting!", 200)
 
@@ -119,8 +121,8 @@ def handle_event(event):
     event_text = event["text"]
     peer_dj = event["user"]
     channel = event["channel"]
-    if "new dj" in event_text:
-        return handle_new_dj(channel, event_text, peer_dj)
+    if "dj" in event_text:
+        return handle_dj(channel, event_text, peer_dj)
     elif "shuffle" in event_text:
         return handle_shuffle(channel, event_text)
     elif "enable" in event_text:
@@ -128,9 +130,8 @@ def handle_event(event):
     elif "disable" in event_text:
         return handle_disable(peer_dj)
     elif "help" in event_text:
-        return handle_help(channel)
-    elif "delete" in event_text:
-        handle_delete(peer_dj)
+        return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
+
     else:
         return request.make_response("invalid event", 500)
 
@@ -174,24 +175,29 @@ def handle_shuffle(channel, event_text):
                                          "Songs Fetched")
 
 
-def handle_new_dj(channel, event_text, peer_dj):
+def handle_dj(channel, event_text, peer_dj):
     user_name = (' '.join((event_text.split())[3:])).strip()
     if not user_name:
-        return __spibot__.send_data_to_slack(channel, get_help_text(),
-                                             "Help Message Sent")
+        return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
     app.logger.error("user_name: %s peer_dj: %s", user_name, peer_dj)
     u_mapping = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
-    if u_mapping is None:
-        u_mapping = UserMapping(peer_dj, user_name)
-        db.session.add(u_mapping)
-        db.session.commit()
-        app.logger.error("u_mapping: %s added to db", u_mapping)
-    elif u_mapping.spotify_user_name != user_name:
-        u_mapping.spotify_user_name = user_name
-        db.session.commit()
-        app.logger.error("updated the spotify user name to : %s ",
-                         u_mapping.spotify_user_name)
-    return __spibot__.send_authorization_pm(peer_dj, channel)
+    if "new dj" in event_text:
+        if u_mapping is None:
+            u_mapping = UserMapping(peer_dj, user_name)
+            db.session.add(u_mapping)
+            db.session.commit()
+            app.logger.error("u_mapping: %s added to db", u_mapping)
+        elif u_mapping.spotify_user_name != user_name:
+            u_mapping.spotify_user_name = user_name
+            db.session.commit()
+            app.logger.error("updated the spotify user name to : %s ", u_mapping.spotify_user_name)
+        return __spibot__.send_authorization_pm(peer_dj, channel)
+    elif "update dj" in event_text:
+        if u_mapping is not None and u_mapping.spotify_user_name != user_name:
+            u_mapping.spotify_user_name = user_name
+            db.session.commit()
+            return __spibot__.send_data_to_slack(peer_dj, "Spotify user updated", "updated")
+        return __spibot__.send_data_to_slack(peer_dj, "Error occurred", "Error")
 
 
 def get_random_fake_song():
@@ -244,7 +250,7 @@ def get_tunes(membersInChannel, toFilterUsers):
     return '\n'.join(songs)
 
 def add_to_playlist(track, user, track_info):
-    
+
     matchingTrack = Track.query.filter_by(spotify_id=track['id']).first()
 
     if matchingTrack is None:
@@ -288,7 +294,7 @@ def get_tunes_detailed():
     return songs
 
 def get_artists_string(track):
-    
+
     if not track['artists']:
         return ""
     track_info = ""
@@ -296,7 +302,7 @@ def get_artists_string(track):
         track_info += "%s, " %(i['name'])
 
     return track_info
-    
+
 def _renew_access_token(user):
     t = __spibot__.get_new_access_token(refresh_token=user.refresh_tok)
     user_tok = t['access_token']
