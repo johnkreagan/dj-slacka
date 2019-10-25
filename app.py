@@ -65,7 +65,7 @@ def get_authorization_token():
       return(jsonify("Error"))
 
 def __create_user__(access_token, refresh_token):
-    app.logger.error("access: %s refresh: %s", access_token, refresh_token)
+    app.logger.error("access: %s", access_token, refresh_token)
     if access_token and refresh_token:
         r = __spibot__.get_user_info(access_token)
         if r:
@@ -87,7 +87,7 @@ def __create_user__(access_token, refresh_token):
 @app.route("/rate/", methods=["GET"])
 def rate():
     track_id = request.args.get('track_id', default = -1, type = int)
-    app.logger.error("track_id: %s like: %s", track_id)
+    app.logger.error("track_id: %s", track_id)
     
     return rate_track(track_id)
 
@@ -95,13 +95,13 @@ def rate():
 @app.route("/unlike/", methods=["GET"])
 def unlike():
     track_id = request.args.get('track_id', default = -1, type = int)
-    app.logger.error("track_id: %s like: %s", track_id)
+    app.logger.error("track_id: %s", track_id)
     
     return unlike_track(track_id)
 
 
 def rate_track(track_id):
-    app.logger.error("Rating track %s %b", track_id)
+    app.logger.error("Rating track %s", track_id)
     if track_id:
         likedTrack = LikedTracks(track_id)
         db.session.add(likedTrack)
@@ -111,7 +111,7 @@ def rate_track(track_id):
     return(jsonify("error liking track"))
 
 def unlike_track(track_id):
-    app.logger.error("Unlike track %s %b", track_id)
+    app.logger.error("Unlike track %s", track_id)
     if track_id:
         toDelete = LikedTracks.query.filter_by(track_id=track_id).order_by('timestamp').limit(1)
         if toDelete is not None:
