@@ -169,7 +169,7 @@ def handle_event(event):
     elif "delete" in event_text:
         u = User.query.filter_by(slack_user_name=peer_dj).first()
         if u:
-            tracks = Playlist.query.filter_by(user_id=peer_dj)
+            tracks = Playlist.query.filter_by(user_id=u.id)
             for track in tracks:
                 db.session.delete(track)
             db.session.delete(u)
