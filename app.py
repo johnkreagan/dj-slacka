@@ -86,6 +86,10 @@ def handle_event(event):
             db.session.add(u_mapping)
             db.session.commit()
             app.logger.error("u_mapping: %s added to db", u_mapping)
+        elif u_mapping.spotify_user_name != user_name:
+            u_mapping.spotify_user_name = user_name
+            db.session.commit()
+            app.logger.error("updated the spotify user name to : %s ", u_mapping.spotify_user_name)
         return __spibot__.send_authorization_pm(peer_dj, channel)
     elif "shuffle" in event_text:
         membersInChannel = []
