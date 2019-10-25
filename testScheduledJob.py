@@ -1,3 +1,4 @@
-from app import app
+from app import app, get_tunes
 
-app.logger.error("i am scheduled job")
+
+get_tunes([], False)
