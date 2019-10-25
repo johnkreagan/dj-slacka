@@ -182,6 +182,7 @@ def get_tunes_detailed():
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
     if not songs:
+        app.logger.error("Songs is NOT")
         return { "error": "Its quiet...too quiet...get some music started g"}
     app.logger.error("Returning songs %s", songs)
     return songs
