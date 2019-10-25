@@ -77,12 +77,13 @@ class PlayedTracks(db.Model):
   id = db.Column(db.Integer, unique=True, primary_key=True)
   track_id = db.Column(db.Integer, db.ForeignKey('tracks.id'),nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'),nullable=False)
-  timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+  timestamp = db.Column(db.DateTime)
   
 
   def __init__(self, track_id, user_id):
     self.track_id = track_id
     self.user_id = user_id
+    self.timestamp = datetime.datetime.utcnow
 
   def __repre__(self):
     return 'track played track_id : {}, user_id: {}, timestamp:{} >'.format(self.track_id, self.user_id, self.timestamp)
