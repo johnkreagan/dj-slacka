@@ -102,7 +102,10 @@ def unlike():
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
     allLikedSongs = LikedTracks.query.group_by('track_id')
-    return jsonify(allLikedSongs)
+
+    app.logger.error(allLikedSongs)
+
+    return allLikedSongs
 
 def rate_track(track_id):
     app.logger.error("Rating track %s", track_id)
