@@ -75,22 +75,31 @@ def handle_event(event):
     event_text = event["text"]
     peer_dj = event["user"]
     channel = event["channel"]
-    if "new dj" in event_text:
+    if "dj" in event_text:
         user_name = (' '.join((event_text.split())[3:])).strip()
         if not user_name:
             return __spibot__.send_data_to_slack(channel, get_help_text(), "Help Message Sent")
         app.logger.error("user_name: %s peer_dj: %s", user_name, peer_dj)
         u_mapping = UserMapping.query.filter_by(slack_user_name=peer_dj).first()
-        if u_mapping is None:
-            u_mapping = UserMapping(peer_dj, user_name)
-            db.session.add(u_mapping)
-            db.session.commit()
-            app.logger.error("u_mapping: %s added to db", u_mapping)
-        elif u_mapping.spotify_user_name != user_name:
-            u_mapping.spotify_user_name = user_name
-            db.session.commit()
-            app.logger.error("updated the spotify user name to : %s ", u_mapping.spotify_user_name)
-        return __spibot__.send_authorization_pm(peer_dj, channel)
+        if "new dj" in event_text:
+            if u_mapping is None:
+                u_mapping = UserMapping(peer_dj, user_name)
+                db.session.add(u_mapping)
+                db.session.commit()
+                app.logger.error("u_mapping: %s added to db", u_mapping)
+            elif u_mapping.spotify_user_name != user_name:
+                u_mapping.spotify_user_name = user_name
+                db.session.commit()
+                app.logger.error("updated the spotify user name to : %s ", u_mapping.spotify_user_name)
+            return __spibot__.send_authorization_pm(peer_dj, channel)
+        elif "update dj" in event_text:
+            if u_mapping is not None and u_mapping.spotify_user_name != user_name:
+                u_mapping.spotify_user_name = user_name
+                user = User.query.filter_by(slack_user_name=peer_dj)
+                if user is not None:
+                    user.spotify_user_name = user_name
+                db.session.commit()
+
     elif "shuffle" in event_text:
         membersInChannel = []
         filterUsers = False
