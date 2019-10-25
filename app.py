@@ -172,11 +172,9 @@ def filterUsers(users, membersToInclude):
     filteredUsers = []
     if membersToInclude == []:
         return users
-
     for user in users:
-        if user.slack_user_name in membersToInclude:
+        if user.slack_user_name in membersToInclude and user.enabled:
             filteredUsers.append(user)
-
     return filteredUsers
 
 def get_tunes_detailed():
