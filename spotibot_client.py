@@ -58,8 +58,6 @@ class Spotibot:
         )
         return make_response("DJ Added", 200)
 
-    def send_currently_playing_list(self, channel, playlist):
-        return self.send_data_to_slack(channel, playlist, "Songs Fetched")
     def send_data_to_slack(self, channel, text, responseMessage):
         self.__sc__.api_call(
             "chat.postMessage",
