@@ -122,10 +122,10 @@ def get_random_fake_song():
 def get_help_text():
     helpText = "-create a user, use `@DJ SLACKA new dj <spotify name>` example: `@DJ SLACKA new dj Camillionaire`\n"
     helpText += "-list of songs currently playing, use `@DJ SLACKA shuffle`\n"
-    helpText += "-`@DJ SLACKA delete` -  removes yourself from our app"
-    helpText += "-`@DJ SLACKA update dj <spotify name>` - if you made a typo when trying to sign up originally"
-    helpText += "-`@DJ SLACKA enable` - to let people know what you're listening to"
-    helpText += "-`@DJ SLACKA disable` - listening to a NSFW playlist? jump off the public viewing list"
+    helpText += "-`@DJ SLACKA delete` -  removes yourself from our app\n"
+    helpText += "-`@DJ SLACKA update dj <spotify name>` - if you made a typo when trying to sign up originally\n"
+    helpText += "-`@DJ SLACKA enable` - to let people know what you're listening to\n"
+    helpText += "-`@DJ SLACKA disable` - listening to a NSFW playlist? jump off the public viewing list\n"
     return helpText
 
 
