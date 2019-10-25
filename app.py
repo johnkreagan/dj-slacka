@@ -95,11 +95,9 @@ def handle_event(event):
         elif "update dj" in event_text:
             if u_mapping is not None and u_mapping.spotify_user_name != user_name:
                 u_mapping.spotify_user_name = user_name
-                user = User.query.filter_by(slack_user_name=peer_dj)
-                if user is not None:
-                    user.spotify_user_name = user_name
                 db.session.commit()
-
+                return __spibot__.send_data_to_slack(peer_dj, "Spotify user updated")
+            return __spibot__.send_data_to_slack(peer_dj, "Error occurred")
     elif "shuffle" in event_text:
         membersInChannel = []
         filterUsers = False
@@ -115,6 +113,11 @@ def handle_event(event):
         if u:
             db.session.delete(u)
             db.session.commit()
+            return __spibot__.send_data_to_slack(peer_dj, "User deleted.")
+        else:
+            return __spibot__.send_data_to_slack(peer_dj, "User not found.")
+
+
     else:
         return requests.make_response("invalid event", 500)
 
