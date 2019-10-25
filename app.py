@@ -88,8 +88,11 @@ def rate():
 def rate_track(track_id, like):
     app.logger.error("Rating track %s %b", track_id, like)
     if track_id:
-        matchingTrack = Track.query.filter_by(track_id=track_id).first()
-
+        track_object = Track.query.filter_by(track_id=track_id).first()
+        if track_object:
+            track_object.rating = track_object.rating +  1 if like else -1
+            db.session.commit()
+            return(jsonify("success!"))
 
     return(jsonify("error adding new user"))
 
