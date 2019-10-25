@@ -89,16 +89,16 @@ def rate():
     track_id = request.args.get('track_id', default = -1, type = int)
     app.logger.error("track_id: %s like: %s", track_id)
     
-    rate_track(track_id)
-    return request.make_response("Thank you for voting!", 200)
+    return rate_track(track_id)
+
 
 @app.route("/unlike/", methods=["GET"])
 def unlike():
     track_id = request.args.get('track_id', default = -1, type = int)
     app.logger.error("track_id: %s like: %s", track_id)
     
-    unlike_track(track_id)
-    return request.make_response("Thank you for disliking!", 200)
+    return unlike_track(track_id)
+
 
 def rate_track(track_id):
     app.logger.error("Rating track %s %b", track_id)
