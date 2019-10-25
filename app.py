@@ -4,9 +4,11 @@ from flask_cors import CORS
 from spotibot_client import Spotibot, SpotifyAuthTokenError
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from sqlalchemy import func
 import os
 import random
 import json
+
 
 
 app = Flask(__name__)
@@ -101,7 +103,7 @@ def unlike():
 
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
-    allLikedSongs = LikedTracks.query.group_by('track_id')
+    allLikedSongs = LikedTracks.query(func.count(track_id),track_id).group_by('track_id').all()
 
     app.logger.error(allLikedSongs)
 
