@@ -175,9 +175,9 @@ def get_tunes_detailed():
             if track:
                 track = track['item']
                 track_id = add_to_playlist(track, user, get_artists_string(track))
-                app.logger.error("playlist track retrieved: %s added to db", track)
+                app.logger.error("playlist track retrieved: %s added to db", track_id)
                 songs.append({"user":user.name,"track":track,"track_id":track_id})
-
+                app.logger.error("Added to songs")
         except SpotifyAuthTokenError:
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
