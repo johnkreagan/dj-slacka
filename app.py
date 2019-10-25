@@ -17,7 +17,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Track, PlayedTracks
+from models import User, UserSchema, UserMapping, Track, PlayedTracks, Playlist
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
