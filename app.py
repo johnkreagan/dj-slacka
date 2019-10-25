@@ -147,7 +147,7 @@ def get_tunes(membersInChannel, toFilterUsers):
         app.logger.error("filteredUsers: %s ", theUser.name)
 
     for user in filteredUsers:
-        if user.enabled:
+        if user.enabled == 'true':
             try:
                 track = __spibot__.get_currently_playing(user.oauth)
                 if track:
