@@ -151,6 +151,8 @@ def add_to_playlist(track, user, track_info):
     db.session.add(playlist)
     db.session.commit()
     app.logger.error("playlist: %s added to db", playlist)
+    db.session.flush()
+    db.session.update(playlist)
     return playlist.id
 
 def filterUsers(users, membersToInclude):
@@ -175,7 +177,7 @@ def get_tunes_detailed():
             if track:
                 track = track['item']
                 track_id = add_to_playlist(track, user, get_artists_string(track))
-                app.logger.error("track retrieved: %s added to db", track_id)
+                app.logger.error("track retrieved: %s added to db", track)
                 songs.append({"user":user.name,"track":track,"track_id":track_id})
 
         except SpotifyAuthTokenError:
