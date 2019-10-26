@@ -107,7 +107,7 @@ def most_liked_songs():
     allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id)).group_by(LikedTracks.track_id).all()
     for trackLikes in allLikedSongs:
         matchingTrack = Track.query.filter_by(id=trackLikes[0]).first()
-        toReturn.append({"track_info":matchingTrack,"likes":trackLikes[1]})
+        toReturn.append({"track_id":matchingTrack.spotify_id,"likes":trackLikes[1]})
     
     app.logger.error("all liked songs: %s", allLikedSongs)
 
