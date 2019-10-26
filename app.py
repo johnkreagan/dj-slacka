@@ -104,7 +104,7 @@ def unlike():
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
     toReturn = []
-    allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id)).group_by(LikedTracks.track_id).all()
+    allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id).label('likeCount')).order_by('likeCount').group_by(LikedTracks.track_id).all()
     for trackLikes in allLikedSongs:
         matchingTrack = Track.query.filter_by(id=trackLikes[0]).first()
         toReturn.append({"track_id":trackLikes[0],"spotify_id":matchingTrack.spotify_id,"likes":trackLikes[1]})
