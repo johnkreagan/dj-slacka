@@ -104,7 +104,7 @@ def unlike():
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
     allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id)).group_by(LikedTracks.track_id).all()
-    app.logger.error(allLikedSongs)
+    app.logger.error("all liked songs: %s", allLikedSongs)
 
     return allLikedSongs
 
