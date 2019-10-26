@@ -4,7 +4,7 @@ from flask_cors import CORS
 from spotibot_client import Spotibot, SpotifyAuthTokenError
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from sqlalchemy import func
+from sqlalchemy import func, desc
 import os
 import random
 import json
@@ -104,7 +104,7 @@ def unlike():
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
     toReturn = []
-    allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id).label('likeCount')).order_by('likeCount').group_by(LikedTracks.track_id).all()
+    allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id).label('likeCount')).order_by(desc('likeCount')).group_by(LikedTracks.track_id).all()
     for trackLikes in allLikedSongs:
         matchingTrack = Track.query.filter_by(id=trackLikes[0]).first()
         toReturn.append({"track_id":trackLikes[0],"spotify_id":matchingTrack.spotify_id,"likes":trackLikes[1]})
