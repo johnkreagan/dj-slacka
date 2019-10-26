@@ -103,10 +103,18 @@ def unlike():
 
 @app.route("/mostLikedSongs/", methods=["GET"])
 def most_liked_songs():
+    toReturn = []
     allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id)).group_by(LikedTracks.track_id).all()
+    for trackLikes in allLikedSongs:
+        matchingTrack = Track.query.filter_by(track_id=trackLikes.track_id).first()
+        toReturn.append({"track_info":matchingTrack,"likes":trackLikes})
+    
     app.logger.error("all liked songs: %s", allLikedSongs)
 
-    return jsonify(allLikedSongs)
+    return jsonify(toReturn)
+
+def get_likes_by_track_id(track_id):
+    return LikedTracks.query.filter_by(track_id=track_id).limit(1)
 
 def rate_track(track_id):
     app.logger.error("Rating track %s", track_id)
