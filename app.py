@@ -4,9 +4,11 @@ from flask_cors import CORS
 from spotibot_client import Spotibot, SpotifyAuthTokenError
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from sqlalchemy import func, desc
 import os
 import random
 import json
+
 
 
 app = Flask(__name__)
@@ -17,7 +19,7 @@ hku = Heroku(app)
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
-from models import User, UserSchema, UserMapping, Track, PlayedTracks, Playlist
+from models import User, UserSchema, UserMapping, Track, PlayedTracks, LikedTracks
 
 __spibot__ = Spotibot(os.environ["SLACK_API_TOKEN"])
 
@@ -65,7 +67,7 @@ def get_authorization_token():
       return(jsonify("Error"))
 
 def __create_user__(access_token, refresh_token):
-    app.logger.error("access: %s refresh: %s", access_token, refresh_token)
+    app.logger.error("access: %s", access_token, refresh_token)
     if access_token and refresh_token:
         r = __spibot__.get_user_info(access_token)
         if r:
@@ -87,24 +89,59 @@ def __create_user__(access_token, refresh_token):
 @app.route("/rate/", methods=["GET"])
 def rate():
     track_id = request.args.get('track_id', default = -1, type = int)
-    like = request.args.get('like', default = 0, type = int)
-    app.logger.error("track_id: %s like: %s", track_id, like)
-    if (track_id == -1 or like == 0):
-        return  request.make_response("invalid parameters", 400)
+    app.logger.error("track_id: %s", track_id)
+    
+    return rate_track(track_id)
 
-    rate_track(track_id, (like > 0))
-    return request.make_response("Thank you for voting!", 200)
 
-def rate_track(track_id, like):
-    app.logger.error("Rating track %s %b", track_id, like)
+@app.route("/unlike/", methods=["GET"])
+def unlike():
+    track_id = request.args.get('track_id', default = -1, type = int)
+    app.logger.error("track_id: %s", track_id)
+    
+    return unlike_track(track_id)
+
+@app.route("/mostLikedSongs/", methods=["GET"])
+def most_liked_songs():
+    toReturn = []
+    allLikedSongs = db.session.query(LikedTracks.track_id, func.count(LikedTracks.track_id).label('likeCount')).order_by(desc('likeCount')).group_by(LikedTracks.track_id).all()
+    for trackLikes in allLikedSongs:
+        matchingTrack = Track.query.filter_by(id=trackLikes[0]).first()
+        toReturn.append({"track_id":trackLikes[0],"spotify_id":matchingTrack.spotify_id,"likes":trackLikes[1]})
+    
+    app.logger.error("all liked songs: %s", allLikedSongs)
+
+    return jsonify(toReturn)
+
+def get_likes_by_track_id(track_id):
+    return LikedTracks.query.filter_by(track_id=track_id).limit(1)
+
+def rate_track(track_id):
+    app.logger.error("Rating track %s", track_id)
     if track_id:
-        track_object = Track.query.filter_by(track_id=track_id).first()
-        if track_object:
-            track_object.rating = track_object.rating +  1 if like else -1
-            db.session.commit()
-            return(jsonify("success!"))
+        likedTrack = LikedTracks(track_id)
+        db.session.add(likedTrack)
+        db.session.commit()
+        return(jsonify("success!"))
 
-    return(jsonify("error adding new user"))
+    return(jsonify("error liking track"))
+
+def unlike_track(track_id):
+    app.logger.error("Unlike track %s", track_id)
+    if track_id:
+        toDelete = LikedTracks.query.filter_by(track_id=track_id).order_by('timestamp').limit(1)
+        if toDelete is not None:
+            db.session.delete(toDelete)
+            db.session.commit()
+        return(jsonify("success!"))
+
+    return(jsonify("error deleting liked track"))
+
+def get_likes_for_song(track_id):
+    LikedTracks.query.filter_by(track_id=track_id).first()
+
+
+
 
 def comment_track(track_id, comment):
     app.logger.error("commenting on track %s %b", track_id, comment)

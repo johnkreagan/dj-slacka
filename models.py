@@ -82,7 +82,6 @@ class PlayedTracks(db.Model):
   track_id = db.Column(db.Integer, db.ForeignKey('tracks.id'),nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'),nullable=False)
   timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-  
 
   def __init__(self, track_id, user_id):
     self.track_id = track_id
@@ -91,3 +90,15 @@ class PlayedTracks(db.Model):
   def __repre__(self):
     return 'track played track_id : {}, user_id: {}, timestamp:{} >'.format(self.track_id, self.user_id, self.timestamp)
 
+class LikedTracks(db.Model):
+  __tablename__ = 'liked_tracks'
+
+  id = db.Column(db.Integer, unique=True, primary_key=True)
+  track_id = db.Column(db.Integer, db.ForeignKey('tracks.id'),nullable=False)
+  timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+  def __init__(self, track_id):
+    self.track_id = track_id
+
+  def __repre__(self):
+    return 'track like track_id :{}, timestamp:{} >'.format(self.track_id, self.timestamp)
