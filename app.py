@@ -86,6 +86,18 @@ def __create_user__(access_token, refresh_token):
             return(jsonify("success!"))
     return(jsonify("error adding new user"))
 
+@app.route("/mostPlayedSongs/", methods=["GET"])
+def most_played_songs():
+    toReturn = []
+    allPlayedSongs = db.session.query(PlayedTracks.track_id, func.count(PlayedTracks.track_id).label('playedCount')).order_by(desc('playedCount')).group_by(PlayedTracks.track_id).limit(25)
+    for playedTrack in allPlayedSongs:
+        matchingTrack = Track.query.filter_by(id=playedTrack[0]).first()
+        toReturn.append({"track_id":playedTrack[0],"spotify_id":matchingTrack.spotify_id,"likes":playedTrack[1]})
+    
+    app.logger.error("all liked songs: %s", allPlayedSongs)
+
+    return jsonify(toReturn)
+
 @app.route("/rate/", methods=["GET"])
 def rate():
     track_id = request.args.get('track_id', default = -1, type = int)
