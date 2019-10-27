@@ -87,7 +87,7 @@ def __create_user__(access_token, refresh_token):
     return(jsonify("error adding new user"))
 
 @app.route("/mostPlayedSongs/", methods=["GET"])
-def most_liked_songs():
+def most_played_songs():
     toReturn = []
     allPlayedSongs = db.session.query(PlayedTracks.track_id, func.count(PlayedTracks.track_id).label('playedCount')).order_by(desc('playedCount')).group_by(PlayedTracks.track_id).all()
     for playedTrack in allPlayedSongs:
