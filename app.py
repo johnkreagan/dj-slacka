@@ -291,6 +291,7 @@ def get_tunes(membersInChannel, toFilterUsers):
                 songs.append("%s -> %s" %(user.name, track_info))
 
         except SpotifyAuthTokenError:
+            app.logger.error("auth token error")
             _renew_access_token(user)
             __spibot__.get_currently_playing(user.oauth)
     if not songs:
