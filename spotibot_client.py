@@ -1,6 +1,5 @@
 from flask import make_response
 from slackclient import SlackClient
-from app import app
 import base64, requests, six, json, os
 import spotipy.oauth2 as spotipy_auth
 
@@ -27,7 +26,6 @@ class Spotibot:
     def get_currently_playing(self, access_token):
         headers = { 'Authorization': 'Bearer ' + access_token }
         response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-        app.logger.error(response.status_code)
         if response.status_code == 200:
             r = json.loads(response.content)
             return(r)
